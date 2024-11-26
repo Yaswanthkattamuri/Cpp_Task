@@ -31,34 +31,54 @@ class MenuItem {
 public:
     string name;
     vector<MenuItem*> subMenu;
+    MenuItem* parentMenu;
 
-    MenuItem(string itemName) : name(itemName) {}
+    MenuItem(string itemName) : name(itemName), parentMenu(nullptr) {}
 
     void addSubMenu(MenuItem* item) {
         subMenu.push_back(item);
+        item->parentMenu = this;  // Set parent menu for submenus
     }
 };
 
 class MenuSystem {
 private:
     MenuItem* currentMenu;
+    int currentSelection;
 
 public:
-    MenuSystem(MenuItem* root) : currentMenu(root) {}
+    MenuSystem(MenuItem* root) : currentMenu(root), currentSelection(0) {}
 
     void displayMenu() {
         cout << "Current Menu: " << currentMenu->name << "\n";
         for (int i = 0; i < currentMenu->subMenu.size(); i++) {
-            cout << i + 1 << ". " << currentMenu->subMenu[i]->name << "\n";
+            cout << (i == currentSelection ? "-> " : "   ") << currentMenu->subMenu[i]->name << "\n";
         }
-        cout << "0. Back\n";
+        cout << "1. Up\n2. Down\n3. Back\n0. Select\n4. Exit\n";
     }
 
     void navigate(int choice) {
-        if (choice == 0) {
-            currentMenu = currentMenu->subMenu[0];  // Go back to the parent menu
-        } else if (choice > 0 && choice <= currentMenu->subMenu.size()) {
-            currentMenu = currentMenu->subMenu[choice - 1];
+        if (choice == 1) {  // Up
+            if (currentSelection > 0) {
+                currentSelection--;
+            }
+        } else if (choice == 2) {  // Down
+            if (currentSelection < currentMenu->subMenu.size() - 1) {
+                currentSelection++;
+            }
+        } else if (choice == 3) {  // Back to parent menu
+            if (currentMenu->parentMenu != nullptr) {
+                currentMenu = currentMenu->parentMenu;
+                currentSelection = 0;  // Reset selection when going back
+            }
+        } else if (choice == 0) {  // Select
+            if (!currentMenu->subMenu.empty()) {
+                currentMenu = currentMenu->subMenu[currentSelection];
+                currentSelection = 0;  // Reset selection when moving into a submenu
+            }
+        } else if (choice == 4) {  // Exit the program
+            cout << "Exiting program...\n";
+            exit(0);  // Exit the program immediately
         }
     }
 };
