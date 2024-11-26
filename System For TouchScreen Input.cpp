@@ -22,6 +22,8 @@ code:
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <thread>  // Include for std::this_thread
+#include <chrono>  // Include for std::chrono
 
 using namespace std;
 
@@ -75,7 +77,7 @@ int main() {
     for (int i = 0; i < 10; ++i) {
         processor.generateRandomEvent();
         processor.processEvent();
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(chrono::seconds(1));  // Sleep for 1 second
     }
 
     return 0;
