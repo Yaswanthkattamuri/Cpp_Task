@@ -16,69 +16,234 @@ A program simulating event processing.
 Example output demonstrating event handling..*/
 
 
-code:
+//code:
 #include <iostream>
+
+
 #include <queue>
+
+
+#include <memory>
+
+
 #include <string>
+
+
 #include <cstdlib>
+
+
 #include <ctime>
-#include <thread>  // Include for std::this_thread
-#include <chrono>  // Include for std::chrono
+
 
 using namespace std;
 
+
 class Event {
-public:
-    enum EventType { TAP, SWIPE };
-    EventType eventType;
-    int x, y;
-    string timestamp;
 
-    Event(EventType type, int xCoord, int yCoord, const string& time)
-        : eventType(type), x(xCoord), y(yCoord), timestamp(time) {}
-};
-
-class EventProcessor {
-private:
-    queue<Event> eventQueue;
 
 public:
-    void generateRandomEvent() {
-        int eventType = rand() % 2; // Randomly select event type
-        int x = rand() % 100;
-        int y = rand() % 100;
-        string timestamp = "2024-11-26 12:34:56";  // Static for simplicity
 
-        if (eventType == 0) {
-            eventQueue.push(Event(Event::TAP, x, y, timestamp));
+
+    string eventType;
+
+
+    float x;
+
+
+    float y;
+
+
+    float xEnd; // End coordinates for Swipe
+
+
+    float yEnd;
+
+
+    long timestamp;
+
+
+    Event(string eventType, float x, float y, long timestamp, float xEnd = 0, float yEnd = 0){
+
+
+    this->eventType=eventType;
+
+
+    this->x=x;
+
+
+    this->y=y;
+
+
+    this->xEnd=xEnd;
+
+
+    this->yEnd=yEnd;
+
+
+    this->timestamp=timestamp;
+
+
+}
+
+
+    void display() {
+
+
+        cout << "Event Type: " << eventType << endl;
+
+
+        cout << "Coordinates: (" << x << ", " << y << ")" << endl;
+
+
+        if (eventType == "Swipe") {
+
+
+            cout << "End Coordinates: (" << xEnd << ", " << yEnd << ")" << endl;
+
+
+        }
+
+
+        cout << "Timestamp: " << timestamp << endl;
+
+
+    }
+
+
+    void process()  {
+
+
+        if (eventType == "Tap") {
+
+
+            cout << "Tapped at position: (" << x << ", " << y << ")" << endl;
+
+
+        } else if (eventType == "Swipe") {
+
+
+            string direction = getSwipeDirection();
+
+
+            cout << "Swipe detected in direction: " << direction << endl;
+
+
+        }
+
+
+    }
+
+
+    private:
+
+
+    string getSwipeDirection()  {
+
+
+        float dx = xEnd - x;
+
+
+        float dy = yEnd - y;
+
+
+        if (abs(dx) > abs(dy)) {
+
+
+            return dx > 0 ? "Right" : "Left";
+
+
         } else {
-            eventQueue.push(Event(Event::SWIPE, x, y, timestamp));
+
+
+            return dy > 0 ? "Up" : "Down";
+
+
         }
+
+
     }
 
-    void processEvent() {
-        if (!eventQueue.empty()) {
-            Event event = eventQueue.front();
-            eventQueue.pop();
-            if (event.eventType == Event::TAP) {
-                cout << "Tap event at (" << event.x << ", " << event.y << ")\n";
-            } else {
-                cout << "Swipe event at (" << event.x << ", " << event.y << ")\n";
-            }
-        }
-    }
+
 };
+
 
 int main() {
-    srand(time(0));
-    EventProcessor processor;
 
-    // Simulate random events every second
-    for (int i = 0; i < 10; ++i) {
-        processor.generateRandomEvent();
-        processor.processEvent();
-        this_thread::sleep_for(chrono::seconds(1));  // Sleep for 1 second
+
+    queue<shared_ptr<Event>> eventQueue;
+
+
+    // Simulate event generation
+
+
+    srand(static_cast<unsigned>(time(0)));
+
+
+    for (int i = 0; i < 7; ++i) {
+
+
+        int eventType = rand() % 2; // 0 for Tap, 1 for Swipe
+
+
+        float x = rand() % 100;
+
+
+        float y = rand() % 100;
+
+
+        long timestamp = rand() % 100000 + 1000000;
+ 
+        if (eventType == 0) { // Tap
+
+
+            eventQueue.emplace(make_shared<Event>("Tap", x, y, timestamp));
+
+
+        } else { // Swipe
+
+
+            float xEnd = rand() % 100;
+
+
+            float yEnd = rand() % 100;
+
+
+            eventQueue.emplace(make_shared<Event>("Swipe", x, y, timestamp, xEnd, yEnd));
+
+
+        }
+
+
     }
 
+
+    // Process the events
+
+
+    while (!eventQueue.empty()) {
+
+
+        auto currentEvent = eventQueue.front();
+
+
+        currentEvent->display();
+
+
+        currentEvent->process();
+
+
+        cout << "---------------------------------" << endl;
+
+
+        eventQueue.pop();
+
+
+    }
+
+
     return 0;
+
+
 }
+
+ 
